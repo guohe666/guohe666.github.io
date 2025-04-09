@@ -57,19 +57,24 @@
 
         .answer {
             display: none;
-            padding: 20px;
-            margin-top: 10px;
+            padding: 0 20px;
+            margin-top: 0;
+            max-height: 0;
             background-color: white;
-            border-radius: 8px;
+            border-radius: 0 0 8px 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             opacity: 0;
-            transform: translateY(-10px);
+            overflow: hidden;
             transition: all 0.3s ease;
         }
 
         .answer.active {
             display: block;
             opacity: 1;
+            padding: 20px;
+            margin-top: 10px;
+            max-height: 500px;
+            border-radius: 8px;
             transform: translateY(0);
         }
 
@@ -136,9 +141,325 @@
             background: #a363d9;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+
+        .logo-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            width: 150px;  /* 设置固定宽度 */
+            height: 150px; /* 设置相同的高度，保持正方形 */
+            border-radius: 0;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            animation: floatAnimation 3s ease-in-out infinite;
+            display: flex; /* 使用flex布局 */
+            align-items: center; /* 垂直居中 */
+            justify-content: center; /* 水平居中 */
+        }
+
+        .logo {
+            width: 100%;
+            height: 100%;
+            object-fit: scale-down; /* 改用scale-down确保图片完整显示 */
+            padding: 10px;
+            max-width: 100%; /* 限制最大宽度 */
+            max-height: 100%; /* 限制最大高度 */
+        }
+
+        @keyframes floatAnimation {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        /* 适配移动端 */
+        @media (max-width: 768px) {
+            .logo-container {
+                width: 100px;  /* 移动端尺寸 */
+                height: 100px;
+            }
+            .logo {
+                padding: 5px;
+            }
+        }
+
+        .qrcode-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 100px;
+            height: 130px; /* 增加高度以容纳文字 */
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 10px;  /* 增加内边距 */
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;  /* 使用flex布局 */
+            flex-direction: column; /* 垂直排列 */
+            justify-content: space-between; /* 均匀分布空间 */
+        }
+
+        .qrcode {
+            width: 100%;
+            height: auto;  /* 改为自适应高度 */
+            max-height: calc(100% - 25px); /* 给文字预留空间 */
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+
+        .qrcode-text {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.2;  /* 增加行高 */
+            margin-top: auto;  /* 文字自动上移 */
+            width: 100%;  /* 确保文字宽度充满容器 */
+            white-space: nowrap;  /* 防止文字换行 */
+        }
+
+        .honor-wall {
+            position: fixed;
+            top: 200px;
+            z-index: 1000;
+            width: 120px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        
+        .left-honor {
+            left: 20px;
+        }
+        
+        .right-honor {
+            right: 20px;
+        }
+
+        .honor-wall h3 {
+            margin: 0 0 10px 0;
+            color: #6c5ce7;
+            font-size: 16px;
+        }
+
+        .honor-item {
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #FFD700, #D4AF37);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .honor-item:hover {
+            transform: translateY(-3px);
+        }
+
+
+
+        .honor-item p {
+            font-size: 12px;
+            color: #666;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .honor-wall {
+                width: 100px;
+                padding: 10px;
+            }
+        }
+
+        /* 适配移动端 */
+        @media (max-width: 768px) {
+            .qrcode-container {
+                width: 80px;
+                height: 110px;
+                padding: 8px;
+            }
+            .qrcode-text {
+                font-size: 10px;
+            }
+        }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const questions = document.querySelectorAll('.question');
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            // 导航标签点击事件
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // 移除所有导航标签的active类
+                    navItems.forEach(navItem => {
+                        navItem.classList.remove('active');
+                    });
+                    
+                    // 给当前点击的导航标签添加active类
+                    this.classList.add('active');
+                    
+                    // 获取分类属性
+                    const category = this.dataset.category;
+                    
+                    // 分类筛选逻辑
+                    const qaItems = document.querySelectorAll('.qa-item');
+                    
+                    qaItems.forEach(item => {
+                        if (category === 'all') {
+                            item.style.opacity = '0';
+                            item.style.height = 'auto';
+                            setTimeout(() => {
+                                item.style.display = 'block';
+                                setTimeout(() => {
+                                    item.style.opacity = '1';
+                                }, 50);
+                            }, 50);
+                        } else {
+                            // 根据问题序号匹配分类
+                            const questionNum = parseInt(item.querySelector('.question').textContent.split('.')[0]);
+                            
+                            // 基础认知(1-3题), 年龄规划(4-5题), 学习方法(6-7题), 能力培养(8题), 未来发展(9题), AI教育(10题)
+                            const categoryMap = {
+                                'basic': [1,2,3],
+                                'age': [4,5],
+                                'learn': [6,7],
+                                'ability': [8],
+                                'future': [9],
+                                'ai': [10]
+                            };
+                            
+                            if (categoryMap[category].includes(questionNum)) {
+                                item.style.opacity = '0';
+                                item.style.height = 'auto';
+                                setTimeout(() => {
+                                    item.style.display = 'block';
+                                    setTimeout(() => {
+                                        item.style.opacity = '1';
+                                    }, 50);
+                                }, 50);
+                            } else {
+                                item.style.opacity = '0';
+                                setTimeout(() => {
+                                    item.style.display = 'none';
+                                }, 300);
+                            }
+                        }
+                    });
+                });
+            });
+            
+            // 问答项点击事件
+            questions.forEach(question => {
+                question.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    // 如果当前问答项已激活，则关闭它
+                    if (this.classList.contains('active')) {
+                        this.classList.remove('active');
+                        const answer = this.nextElementSibling;
+                        answer.classList.remove('active');
+                    } else {
+                        // 关闭所有其他问答项
+                        document.querySelectorAll('.question').forEach(q => {
+                            if (q !== this) {
+                                q.classList.remove('active');
+                                q.nextElementSibling.classList.remove('active');
+                            }
+                        });
+                        
+                        // 激活当前问答项
+                        this.classList.add('active');
+                        const answer = this.nextElementSibling;
+                        answer.classList.add('active');
+                    }
+                });
+            });
+            
+
+
+            // 点击页面其他区域关闭所有问答项
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.question')) {
+                    document.querySelectorAll('.question').forEach(q => {
+                        q.classList.remove('active');
+                        q.nextElementSibling.classList.remove('active');
+                    });
+                }
+            });
+        });
+    </script>
 </head>
 <body>
+    <div class="logo-container">
+        <img src="./images/logo.png" alt="少儿编程" class="logo" title="少儿编程问答系统">
+    </div>
+
+    <div class="qrcode-container">
+        <img src="./images/qrcode.png" alt="扫码关注" class="qrcode" title="扫码关注我们">
+        <div class="qrcode-text">扫码咨询</div>
+    </div>
+
+    <div class="honor-wall left-honor">
+        <h3>荣誉墙</h3>
+        <div class="honor-item">
+            <p>河南省白名单赛事市级承办单位</p>
+        </div>
+        <div class="honor-item">
+            <p>河南省青少年机器人制造就业合作培训单位</p>
+        </div>
+        <div class="honor-item">
+            <p>河南省中小学科学教育典型优秀单位</p>
+        </div>
+        <div class="honor-item">
+            <p>河南省人工智能教育创新示范基地</p>
+        </div>
+        <div class="honor-item">
+            <p>中原地区青少年科技教育先进单位</p>
+        </div>
+        <div class="honor-item">
+            <p>乐高机器人编程课程体系认证授权中心</p>
+        </div>
+        <div class="honor-item">
+            <p>青少年人工智能技术水平测试优秀工作站</p>
+        </div>
+    </div>
+
+    <div class="honor-wall right-honor">
+        <h3>荣誉墙</h3>
+        <div class="honor-item">
+            <p>青少年人工智能技术水平测试培训中心</p>
+        </div>
+        <div class="honor-item">
+            <p>青少年人工智能编程水平测试培训中心</p>
+        </div>
+        <div class="honor-item">
+            <p>工业和信息化部教育与考试中心认证合作单位</p>
+        </div>
+        <div class="honor-item">
+            <p>中国电子教育学会人工智能教育实践基地</p>
+        </div>
+        <div class="honor-item">
+            <p>北京大学人工智能题库编写组战略合作机构</p>
+        </div>
+        <div class="honor-item">
+            <p>全国青少年机器人编程教育示范单位</p>
+        </div>
+        <div class="honor-item">
+            <p>青少年人工智能技术水平测试标准制定委员会成员单位</p>
+        </div>
+    </div>
+
     <h1>少儿编程常见问题解答</h1>
     
     <div class="nav-container">
@@ -1105,24 +1426,63 @@
                 <strong>重点</strong>：关注孩子对AI的理解和应用能力。
             </div>
         </div>
+    </div> <!-- qa-container 结束 -->
+
+    <div class="footer-text">
+        本网页内容由<span class="company-name">西平VAVA乐高机器人编程教育</span>提供
     </div>
+
+    <style>
+        .footer-text {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 40px;
+            font-size: 16px;
+            color: #666;
+        }
+
+        .company-name {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96c93d);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: bold;
+            padding: 0 5px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+    </style>
+
     <script>
         document.querySelectorAll('.question').forEach(question => {
-            question.addEventListener('click', () => {
-                document.querySelectorAll('.question.active').forEach(q => {
-                    if (q !== question) {
-                        q.classList.remove('active');
-                    }
-                });
-                document.querySelectorAll('.answer.active').forEach(a => {
-                    if (a !== question.nextElementSibling) {
-                        a.classList.remove('active');
-                    }
-                });
-                // 切换当前问题和答案
-                question.classList.toggle('active');
-                const answer = question.nextElementSibling;
-                answer.classList.toggle('active');
+            question.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                // 如果当前问答项已激活，则关闭它
+                if (this.classList.contains('active')) {
+                    this.classList.remove('active');
+                    const answer = this.nextElementSibling;
+                    answer.classList.remove('active');
+                } else {
+                    // 关闭所有其他问答项
+                    document.querySelectorAll('.question').forEach(q => {
+                        if (q !== this) {
+                            q.classList.remove('active');
+                            q.nextElementSibling.classList.remove('active');
+                        }
+                    });
+                    
+                    // 激活当前问答项
+                    this.classList.add('active');
+                    const answer = this.nextElementSibling;
+                    answer.classList.add('active');
+                }
+                        q.nextElementSibling.classList.remove('active');
+                    });
+                    
+                    // 打开当前问题和答案
+                    question.classList.add('active');
+                    answer.classList.add('active');
+                }
             });
         });
 
