@@ -2100,6 +2100,31 @@
 
     </div> <!-- qa-container 结束 -->
 
+    <!-- ===== 留言提问区 ===== -->
+    <div class="feedback-section" id="feedback">
+        <h2>还有问题没解决？</h2>
+        <p class="fb-sub">看完所有问答还有疑问？欢迎留言提问。<strong>用手机微信扫码</strong>即可填写，我们会把大家常问的问题整理成新的问答，持续更新到这个页面。</p>
+        <div class="fb-body">
+            <div class="fb-form" id="fbFormWrap" style="display:none">
+                <iframe title="留言提问" loading="lazy"
+                        src="https://docs.qq.com/form/page/DRW50TER5RGF3VmFn"
+                        allow="clipboard-read;clipboard-write"></iframe>
+            </div>
+            <div class="fb-side">
+                <div class="fb-card">
+                    <img src="./images/feedback_qr.png" alt="微信扫码留言">
+                    <p>微信扫一扫 · 填写留言</p>
+                </div>
+                <p class="fb-hint">手机扫上方二维码，用微信登录后即可填写</p>
+                <button type="button" class="fb-btn" id="fbToggleBtn">在电脑上填写</button>
+                <a class="fb-link" target="_blank" rel="noopener"
+                   href="https://docs.qq.com/form/page/DRW50TER5RGF3VmFn">或在手机上直接打开 →</a>
+            </div>
+        </div>
+    </div>
+
+    <a href="#feedback" class="fb-float">✉ 留言提问</a>
+
     <div class="footer-text">
         本网页内容由<span class="company-name">西平VAVA乐高机器人编程教育</span>提供
     </div>
@@ -2121,6 +2146,128 @@
             font-weight: bold;
             padding: 0 5px;
             text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        /* ===== 留言提问区 ===== */
+        .feedback-section {
+            max-width: 800px;
+            margin: 50px auto 10px;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 6px 18px rgba(108, 92, 231, 0.15);
+            padding: 26px 24px 30px;
+            text-align: center;
+        }
+        .feedback-section h2 {
+            margin: 0 0 8px;
+            color: #6c5ce7;
+            font-size: 22px;
+        }
+        .feedback-section .fb-sub {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.7;
+            margin: 0 auto 20px;
+            max-width: 560px;
+        }
+        .fb-body {
+            display: flex;
+            gap: 22px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .fb-form { flex: 1 1 420px; min-width: 290px; }
+        .fb-form iframe {
+            width: 100%;
+            height: 560px;
+            border: 1px solid #ececf5;
+            border-radius: 10px;
+            background: #fafaff;
+        }
+        .fb-side {
+            flex: 0 0 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            align-items: center;
+        }
+        .fb-card {
+            background: linear-gradient(135deg, #f6f4ff, #efeafe);
+            border-radius: 12px;
+            padding: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .fb-card img {
+            width: 150px;
+            height: 150px;
+            display: block;
+            margin: 0 auto;
+            border-radius: 8px;
+            background: #fff;
+            padding: 6px;
+            box-sizing: border-box;
+        }
+        .fb-card p {
+            margin: 8px 0 0;
+            font-size: 13px;
+            color: #6c5ce7;
+            font-weight: bold;
+        }
+        .fb-btn {
+            display: inline-block;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 11px 14px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #6c5ce7, #a363d9);
+            color: #fff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
+            transition: transform 0.2s ease;
+        }
+        .fb-btn:hover { transform: translateY(-2px); }
+
+        .fb-float {
+            position: fixed;
+            right: 22px;
+            bottom: 22px;
+            z-index: 1200;
+            background: linear-gradient(135deg, #6c5ce7, #a363d9);
+            color: #fff !important;
+            text-decoration: none;
+            padding: 12px 18px;
+            border-radius: 26px;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 6px 16px rgba(108, 92, 231, 0.4);
+            transition: transform 0.2s ease;
+        }
+        .fb-float:hover { transform: translateY(-2px); }
+
+                .fb-link {
+            font-size: 12.5px;
+            color: #6c5ce7;
+            text-decoration: none;
+            border-bottom: 1px dashed #b9aef0;
+            padding-bottom: 1px;
+        }
+        .fb-link:hover { color: #4b3fc4; }
+
+        .fb-hint {
+            font-size: 12px;
+            color: #888;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+@media (max-width: 768px) {
+            .fb-side { flex: 1 1 100%; flex-direction: row; justify-content: center; }
+            .fb-card { width: auto; }
+            .fb-card img { width: 120px; height: 120px; }
+            .fb-form iframe { height: 620px; }
         }
     </style>
 
@@ -2229,6 +2376,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 初始显示全部
     applyFilter();
+
+    // ===== 留言区：电脑端展开填写表 =====
+    var fbBtn = document.getElementById('fbToggleBtn');
+    if (fbBtn) {
+        fbBtn.addEventListener('click', function () {
+            var w = document.getElementById('fbFormWrap');
+            if (!w) return;
+            var open = w.style.display !== 'none';
+            w.style.display = open ? 'none' : 'block';
+            fbBtn.textContent = open ? '在电脑上填写' : '收起填写表';
+        });
+    }
 });
 
 </script>
