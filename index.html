@@ -231,21 +231,61 @@
             top: 200px;
             z-index: 1000;
             width: 120px;
-            background: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.9);
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             border-radius: 8px;
             padding: 15px;
             text-align: center;
             max-height: 60vh;
             overflow-y: auto;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: transform 0.35s ease, box-shadow 0.3s ease;
         }
-        
+
+        /* 把手：贴边露出的紫色小条 */
+        .honor-wall::before {
+            content: "荣誉墙";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 14px;
+            background: linear-gradient(135deg, #6c5ce7, #a363d9);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 12px;
+            letter-spacing: 2px;
+            writing-mode: vertical-rl;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 靠边隐藏：默认滑出屏幕，只留一小截把手 */
         .left-honor {
-            left: 20px;
+            left: 0;
+            transform: translateX(calc(-100% + 14px));
         }
-        
+
         .right-honor {
-            right: 20px;
+            right: 0;
+            transform: translateX(calc(100% - 14px));
+        }
+        .left-honor::before  { right: 0; }
+        .right-honor::before { left: 0; }
+
+        /* 鼠标移入或点击固定后，完全滑出 */
+        .left-honor:hover,
+        .left-honor.open {
+            transform: translateX(0);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+
+        .right-honor:hover,
+        .right-honor.open {
+            transform: translateX(0);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
         }
 
         .honor-wall h3 {
@@ -278,7 +318,12 @@
             .honor-wall {
                 width: 100px;
                 padding: 10px;
+                max-height: 50vh;
             }
+            /* 触屏设备：默认不外移太多，点击即可展开 */
+            .left-honor  { transform: translateX(calc(-100% + 12px)); }
+            .right-honor { transform: translateX(calc(100% - 12px)); }
+            .honor-wall::before { width: 12px; font-size: 11px; }
         }
 
         /* 适配移动端 */
@@ -293,112 +338,7 @@
             }
         }
     </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const questions = document.querySelectorAll('.question');
-            const navItems = document.querySelectorAll('.nav-item');
-            
-            // 导航标签点击事件
-            navItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    // 移除所有导航标签的active类
-                    navItems.forEach(navItem => {
-                        navItem.classList.remove('active');
-                    });
-                    
-                    // 给当前点击的导航标签添加active类
-                    this.classList.add('active');
-                    
-                    // 获取分类属性
-                    const category = this.dataset.category;
-                    
-                    // 分类筛选逻辑
-                    const qaItems = document.querySelectorAll('.qa-item');
-                    
-                    qaItems.forEach(item => {
-                        if (category === 'all') {
-                            item.style.opacity = '0';
-                            item.style.height = 'auto';
-                            setTimeout(() => {
-                                item.style.display = 'block';
-                                setTimeout(() => {
-                                    item.style.opacity = '1';
-                                }, 50);
-                            }, 50);
-                        } else {
-                            // 根据问题序号匹配分类
-                            const questionNum = parseInt(item.querySelector('.question').textContent.split('.')[0]);
-                            
-                            // 基础认知(1-3题), 年龄规划(4-5题), 学习方法(6-7题), 能力培养(8题), 未来发展(9题), AI教育(10题)
-                            const categoryMap = {
-                                'basic': [1,2,3],
-                                'age': [4,5],
-                                'learn': [6,7],
-                                'ability': [8],
-                                'future': [9],
-                                'ai': [10]
-                            };
-                            
-                            if (categoryMap[category].includes(questionNum)) {
-                                item.style.opacity = '0';
-                                item.style.height = 'auto';
-                                setTimeout(() => {
-                                    item.style.display = 'block';
-                                    setTimeout(() => {
-                                        item.style.opacity = '1';
-                                    }, 50);
-                                }, 50);
-                            } else {
-                                item.style.opacity = '0';
-                                setTimeout(() => {
-                                    item.style.display = 'none';
-                                }, 300);
-                            }
-                        }
-                    });
-                });
-            });
-            
-            // 问答项点击事件
-            questions.forEach(question => {
-                question.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    
-                    // 如果当前问答项已激活，则关闭它
-                    if (this.classList.contains('active')) {
-                        this.classList.remove('active');
-                        const answer = this.nextElementSibling;
-                        answer.classList.remove('active');
-                    } else {
-                        // 关闭所有其他问答项
-                        document.querySelectorAll('.question').forEach(q => {
-                            if (q !== this) {
-                                q.classList.remove('active');
-                                q.nextElementSibling.classList.remove('active');
-                            }
-                        });
-                        
-                        // 激活当前问答项
-                        this.classList.add('active');
-                        const answer = this.nextElementSibling;
-                        answer.classList.add('active');
-                    }
-                });
-            });
-            
-
-
-            // 点击页面其他区域关闭所有问答项
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.question')) {
-                    document.querySelectorAll('.question').forEach(q => {
-                        q.classList.remove('active');
-                        q.nextElementSibling.classList.remove('active');
-                    });
-                }
-            });
-        });
-    </script>
+    
 </head>
 <body>
     <div class="logo-container">
@@ -469,6 +409,11 @@
         <div class="nav-item" data-category="ability">能力培养</div>
         <div class="nav-item" data-category="future">未来发展</div>
         <div class="nav-item" data-category="ai">AI教育</div>
+        <div class="nav-item" data-category="compete">竞赛升学</div>
+        <div class="nav-item" data-category="policy">国家政策</div>
+        <div class="nav-item" data-category="edu">教育方针</div>
+        <div class="nav-item" data-category="tech">科技趋势</div>
+        <div class="nav-item" data-category="parent">家长新问</div>
         <div class="nav-item" data-category="all">全部问题</div>
     </div>
 
@@ -1426,6 +1371,733 @@
                 <strong>重点</strong>：关注孩子对AI的理解和应用能力。
             </div>
         </div>
+        <!-- ========== 新增：AI 时代与编程 (88-97) ========== -->
+        <div class="qa-item">
+            <div class="question">88. AI 都能写代码了，孩子还需要学编程吗？</div>
+            <div class="answer">
+                <strong>结论</strong>：需要，而且更重要。<br>
+                - <strong>AI 是工具，不是大脑</strong>：AI 能生成代码，但"要做什么、对不对、怎么改"仍然要靠人来判断。<br>
+                - <strong>思维才是核心</strong>：学编程真正训练的是拆解问题、发现规律、逻辑推理，这些恰恰是驾驭 AI 的前提。<br>
+                - <strong>会用 AI 的人</strong>：未来缺的不是"会敲代码的人"，而是"能指挥 AI 解决问题的人"。<br>
+                <strong>总结</strong>：AI 取代的是重复劳动，不是思考能力；编程正是思考能力的训练场。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">89. 孩子用 AI 工具写编程作业，家长该不该管？</div>
+            <div class="answer">
+                <strong>建议：区分"用"和"抄"</strong><br>
+                - <strong>可以用</strong>：让孩子用 AI 解释报错、提示思路，就像查资料一样。<br>
+                - <strong>要管</strong>：直接让 AI 生成整段代码交差，等于跳过了调试与思考过程。<br>
+                - <strong>定规则</strong>：约定"先自己想，卡住了再问 AI，最后自己把代码讲一遍"。<br>
+                <strong>目标</strong>：让 AI 当"编程陪练"，而不是"代打"。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">90. 什么是"生成式人工智能"？学编程的孩子该怎么接触？</div>
+            <div class="answer">
+                <strong>是什么</strong>：像豆包、文心一言、ChatGPT 这类能"自己生成"文字、图片、代码的 AI，就叫生成式人工智能。<br>
+                - <strong>小学低年级</strong>：以体验为主，感受 AI 能听、能说、能画、能答。<br>
+                - <strong>小学高年级和初中</strong>：学编程的孩子可以试着让 AI 帮自己写一个函数，再动手验证和修改。<br>
+                - <strong>提醒</strong>：AI 会"一本正经地胡说"（代码也会报错），要引导孩子动手测、交叉核对。<br>
+                <strong>总结</strong>：重在"会问、会判断、会改"，而不是"会用某个软件"。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">91. AI 时代，学编程能帮孩子培养哪些关键能力？</div>
+            <div class="answer">
+                <strong>四种关键能力</strong><br>
+                - <strong>提问能力</strong>：能把模糊需求拆解清楚，让 AI 或他人听懂。<br>
+                - <strong>判断能力</strong>：能分辨 AI 给的代码能不能跑、有没有隐患。<br>
+                - <strong>创造能力</strong>：能把 AI 当成工具，做出属于自己的作品。<br>
+                - <strong>协作能力</strong>：能和同学、和 AI 分工配合完成任务。<br>
+                <strong>总结</strong>：编程训练的是"人独有的思维与创意"，这正是 AI 时代最值钱的部分。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">92. 学编程和学 AI 是什么关系？</div>
+            <div class="answer">
+                <strong>关系：地基和楼层</strong><br>
+                - <strong>编程是基础</strong>：算法、逻辑、数据结构是理解 AI 的底层语言。<br>
+                - <strong>AI 是应用</strong>：会编程，才能调用、改造甚至训练 AI 模型。<br>
+                - <strong>先后顺序</strong>：先打好编程思维的地基，再接触 AI，会学得更透。<br>
+                <strong>总结</strong>：编程是通往 AI 的必经之路，而不是被 AI 淘汰的旧技能。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">93. 孩子沉迷和 AI 聊天、刷 AI 短视频怎么办？</div>
+            <div class="answer">
+                <strong>先理解，再引导</strong><br>
+                - <strong>看原因</strong>：是无聊、缺朋友，还是被 AI"有求必应"吸引？<br>
+                - <strong>定边界</strong>：约定使用时长和场景，比如只在作业时间用。<br>
+                - <strong>补现实</strong>：多安排线下活动、同伴交往，把注意力拉回真实世界。<br>
+                - <strong>给出口</strong>：用编程把 AI 当"创作工具"——让孩子指挥 AI 做个小游戏，比自己跟 AI 闲聊更有价值。<br>
+                <strong>目标</strong>：把 AI 用成工具，而不是情感寄托。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">94. AI 会让孩子变懒、不爱思考吗？学编程为什么能对冲？</div>
+            <div class="answer">
+                <strong>取决于怎么用</strong><br>
+                - <strong>会变懒的用法</strong>：遇事直接问 AI、拿现成答案，跳过思考。<br>
+                - <strong>编程的天然纠偏</strong>：代码跑不出来就是跑不出来，逼着孩子自己找错、自己改。<br>
+                - <strong>家长可以做</strong>：多问"你怎么想的？""AI 给的对吗？"逼出思考。<br>
+                <strong>总结</strong>：编程"结果要能跑通"的特点，天然保留了"自己想"的习惯。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">95. 怎么判断孩子是在"用 AI 学编程"还是"用 AI 偷懒"？</div>
+            <div class="answer">
+                <strong>三个观察点</strong><br>
+                - <strong>能不能改</strong>：AI 生成的代码，孩子能否看懂并改错、改需求？<br>
+                - <strong>能不能讲</strong>：学完能否用自己的话复述这段程序在干什么？<br>
+                - <strong>会不会追问</strong>：遇到报错，是继续排查，还是直接换一题？<br>
+                <strong>总结</strong>：能改、能讲、能追问，就是用 AI 学编程；只抄不改，就是偷懒。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">96. 家长自己不懂编程、不懂 AI，怎么陪孩子一起学？</div>
+            <div class="answer">
+                <strong>不懂也能陪</strong><br>
+                - <strong>当同学</strong>：和孩子一起试、一起问，不懂就请孩子"教教我"。<br>
+                - <strong>当裁判</strong>：帮孩子把关，问"这个程序真的实现你要的效果了吗？"<br>
+                - <strong>当观众</strong>：让孩子演示作品，认真看、给反馈。<br>
+                <strong>总结</strong>：家长不需要会写代码，需要的是陪伴、提问和边界。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">97. AI 时代，还有必要让孩子背语法、记公式吗？</div>
+            <div class="answer">
+                <strong>需要，但重点变了</strong><br>
+                - <strong>要记的是"够用的基础"</strong>：基本语法、变量、循环、条件，是读懂和修改程序的地基。<br>
+                - <strong>更要练"会用"</strong>：知道什么时候用哪种结构、怎么判断结果合理。<br>
+                - <strong>死记硬背在退场</strong>：能随手查到的细节，不必强记。<br>
+                <strong>总结</strong>：从"记住了吗"转向"理解了吗、会用了么"。
+            </div>
+        </div>
+
+        <!-- ========== 新增：竞赛升学 (98-105) ========== -->
+        <div class="qa-item">
+            <div class="question">98. 白名单赛事是什么？学编程的孩子值得参加吗？</div>
+            <div class="answer">
+                <strong>什么是白名单</strong>：教育部每年公布"面向中小学生的全国性竞赛活动名单"，只有名单里的竞赛才是合规的。<br>
+                - <strong>规模</strong>：2025—2028 学年名单共 47 项，含自然科学素养类（编程、机器人、信息学等）、人文综合素养类、艺术体育类。<br>
+                - <strong>作用</strong>：合规、相对规范，能帮孩子锻炼能力、开阔视野。<br>
+                - <strong>重要提醒</strong>：白名单竞赛的结果<b>不得作为中小学招生入学依据，也不得作为高考加分项目</b>。<br>
+                <strong>总结</strong>：把它当编程能力的成长平台，别当升学捷径。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">99. 信息学奥赛（信奥）是什么？和其他编程比赛有什么不同？</div>
+            <div class="answer">
+                <strong>信奥是什么</strong>：全国中学生信息学奥林匹克竞赛，由中国计算机学会（CCF）主办，是五大学科奥赛（数、理、化、生、信）之一，也是编程类竞赛里最"硬核"的一条。<br>
+                - <strong>和编程的关系</strong>：信奥考的就是编程、算法与数据结构，是编程能力的最高竞技场。<br>
+                - <strong>阶梯路径</strong>：一般从 CSP-J/S 认证起步，再到 NOIP、省选、NOI，最后进入国家集训队。<br>
+                - <strong>和其他比赛的区别</strong>：机器人、无人机等偏实践与创意，信奥偏算法与编程功底。<br>
+                <strong>总结</strong>：信奥是把编程学到深处的一条正规路径。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">100. 现在让孩子靠编程竞赛升学，还靠谱吗？</div>
+            <div class="answer">
+                <strong>规则收紧，请以官方为准</strong><br>
+                - <strong>保送门槛抬高</strong>：按教育部 2025 年 11 月发布的 2026 年特殊类型招生规定，只有五大学科奥赛<b>国家集训队成员</b>才具备保送资格（每年约 260 人）。<br>
+                - <strong>专业绑定</strong>：奥赛保送生原则上要录取到与获奖学科相对应的基础学科专业，且在校期间不允许转专业。<br>
+                - <strong>信奥的特殊性</strong>：信息学对应的正是计算机、人工智能等热门专业领域。<br>
+                - <strong>别当捷径</strong>：政策方向是淡化功利导向，靠编程竞赛"曲线升学"的路越来越窄。<br>
+                <strong>总结</strong>：为孩子兴趣和能力而学编程，不要为投机升学而赌。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">101. 什么是科技特长生？学编程的孩子怎么走这条路？</div>
+            <div class="answer">
+                <strong>科技特长生</strong>：部分中学招生时，会面向在科技、编程、机器人、信息学等方面有特长的学生开辟专门通道。<br>
+                - <strong>各地各校政策不同</strong>：招收标准、认可奖项都不一样，要以目标学校当年公布的招生简章为准。<br>
+                - <strong>常见依据</strong>：信息学竞赛获奖、教育部白名单赛事成绩、编程等级认证等。<br>
+                - <strong>小学阶段可以做的</strong>：打好编程基础、参加合规赛事积累作品和经历、保持兴趣。<br>
+                <strong>提醒</strong>：不要把特长生当成"保底录取"，重点还是孩子的真实兴趣与成长。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">102. 编程竞赛（信奥）的成长路径是怎样的？</div>
+            <div class="answer">
+                <strong>大致阶梯（供了解，以 CCF 官方为准）</strong><br>
+                - <strong>入门</strong>：学习图形化或 Python 打基础，再转入 C++ 语法与基础算法。<br>
+                - <strong>CSP-J/S</strong>：分入门级和提高级认证，是常见的第一道关。<br>
+                - <strong>NOIP</strong>：全国青少年信息学奥林匹克联赛。<br>
+                - <strong>省选 / NOI</strong>：省队选拔、全国决赛。<br>
+                - <strong>国家集训队</strong>：顶尖选手才有资格，也是保送的关键门槛。<br>
+                <strong>总结</strong>：这是一条需要长期投入的路径，适合真正热爱编程的孩子。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">103. 学编程一定要冲编程竞赛吗？</div>
+            <div class="answer">
+                <strong>不必</strong><br>
+                - <strong>竞赛是少数人的路</strong>：它要求天赋、时间和系统训练，只有极少数孩子能走到底。<br>
+                - <strong>编程价值更广</strong>：培养逻辑思维、解决问题的能力，对学习、生活、未来工作都有用。<br>
+                - <strong>因材施教</strong>：有的孩子适合竞赛冲刺，有的孩子适合兴趣拓展或做出自己的作品，都很正常。<br>
+                <strong>总结</strong>：竞赛是编程学习的一个选项，不是唯一目标。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">104. 蓝桥杯、NOC 这些编程比赛还值得参加吗？</div>
+            <div class="answer">
+                <strong>先看是不是白名单</strong><br>
+                - <strong>名单在变</strong>：在 2025—2028 学年名单调整中，"全国中小学信息技术创新与实践大赛（NOC）""蓝桥杯"等已被移出面向中小学生的全国性竞赛白名单。<br>
+                - <b>判断标准</b>：凡不在白名单内、或向家长收费的竞赛，都要谨慎，属于违规竞赛。<br>
+                - <strong>参加前</strong>：先到教育部官网核对当年最新白名单，再看是否适合孩子的编程水平。<br>
+                <strong>总结</strong>：认准白名单，不花冤枉钱。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">105. 编程竞赛奖项能作为小升初、中考的录取依据吗？</div>
+            <div class="answer">
+                <strong>不能作为依据</strong><br>
+                - <strong>教育部明确</strong>：白名单竞赛及结果不得作为中小学招生入学依据和高考加分项目。<br>
+                - <strong>各地要求</strong>：义务教育阶段免试就近入学，招生不得与竞赛成绩挂钩。<br>
+                - <strong>正确看待</strong>：编程竞赛的价值在于锻炼能力、积累经历，而非"换录取名额"。<br>
+                <strong>总结</strong>：把竞赛当成长，别当筹码；以当地教育部门当年政策为准。
+            </div>
+        </div>
+
+        <!-- ========== 新增：国家政策与编程教育 (106-122) ========== -->
+        <div class="qa-item">
+            <div class="question">106. 国家为什么要把编程、信息科技写进中小学课程？</div>
+            <div class="answer">
+                <strong>总的方向</strong>：把编程、算法、人工智能这类内容纳入国家课程，是为了培养面向未来的数字素养与创新能力，服务科技强国战略。<br>
+                - <strong>三条主线</strong>：①从"用电脑"转向"懂原理、会创造"；②从少数人的兴趣班转向面向全体学生的必修内容；③与人工智能、科学教育一体推进。<br>
+                <strong>总结</strong>：编程教育已从"课外兴趣"上升为国家课程体系的一部分。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">107. 义务教育阶段，信息科技课是必修的吗？和编程有什么关系？</div>
+            <div class="answer">
+                <strong>是必修</strong><br>
+                - <strong>课程标准</strong>：2022 年 4 月，教育部发布《义务教育信息科技课程标准（2022 年版）》。<br>
+                - <strong>独立设课</strong>：「信息科技」从综合实践活动里独立出来，成为国家课程，3—8 年级独立开设，每周不少于 1 课时。<br>
+                - <strong>和编程的关系</strong>：课程围绕数据、算法、网络、信息处理、信息安全、人工智能六条主线，编程与算法是其中的核心内容。<br>
+                <strong>总结</strong>：信息科技已是每个孩子都要上的国家课程，编程是它的重要组成部分。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">108. 信息科技新课标里，孩子要学哪些内容？编程占多少？</div>
+            <div class="answer">
+                <strong>六条逻辑主线</strong>：数据、算法、网络、信息处理、信息安全、人工智能——其中「算法」直接对应编程思维，是重要一环。<br>
+                <strong>四大核心素养</strong>：信息意识、计算思维、数字化学习与创新、信息社会责任。<br>
+                - <strong>初中模块</strong>：设有「人工智能与智慧社会」相关内容。<br>
+                - <strong>学习方式</strong>：强调真实情境、动手实践、项目式学习，鼓励孩子做出作品。<br>
+                <strong>总结</strong>：编程不是孤立的"敲代码"，而是融入算法、数据、AI 的综合实践。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">109. 人工智能在义务教育阶段是独立课程吗？和编程什么关系？</div>
+            <div class="answer">
+                <strong>不是独立课程</strong><br>
+                - <strong>定位</strong>：在义务教育阶段，人工智能不是单独开设的一门课，而是信息科技课程里的一条逻辑主线。<br>
+                - <strong>和编程的关系</strong>：理解 AI 需要先有算法与编程基础，两者天然衔接。<br>
+                - <strong>落地形态</strong>：常以地方课程、校本课程，或课后服务、研学实践等形式补充延伸。<br>
+                <strong>总结</strong>：AI 教育是内容与主线，编程是通往它的重要阶梯。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">110. 国家为什么大力推进中小学人工智能教育？</div>
+            <div class="answer">
+                <strong>背景与目标</strong><br>
+                - <strong>政策文件</strong>：2024 年 11 月，教育部办公厅印发《关于加强中小学人工智能教育的通知》（教基厅函〔2024〕32 号）。<br>
+                - <strong>目标</strong>：明确到 <b>2030 年前在中小学基本普及人工智能教育</b>。<br>
+                - <strong>和编程的关系</strong>：普及 AI 教育，必然要打牢算法与编程的基础，少儿编程因此被重新定位。<br>
+                <strong>总结</strong>：AI 教育已上升为国家战略，编程是它的地基。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">111. AI 教育通知提出的主要任务有哪些？</div>
+            <div class="answer">
+                <strong>六大主要任务</strong><br>
+                - 构建系统化课程体系。<br>
+                - 实施常态化教学与评价。<br>
+                - 开发普适化教学资源。<br>
+                - 建设泛在化教学环境。<br>
+                - 推动规模化教师供给。<br>
+                - 组织多样化交流活动。<br>
+                <strong>分学段要求</strong>：小学低年级侧重感知体验，小学高年级和初中侧重理解应用，高中侧重项目创作与前沿应用。<br>
+                <strong>总结</strong>：不是"一刀切"，而是按年龄循序渐进——这也正是少儿编程分阶段教学的政策依据。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">112. 《教育强国建设规划纲要》和学编程有什么关系？</div>
+            <div class="answer">
+                <strong>是什么</strong>：2025 年 1 月，中共中央、国务院印发《教育强国建设规划纲要（2024—2035年）》，是我国首个以「教育强国」为主题的中长期战略规划。<br>
+                - <strong>和编程相关的内容</strong>：加强科学教育、强化核心素养培育、探索设立以科学教育为特色的普通高中、统筹「双减」与教学质量提升。<br>
+                <strong>总结</strong>：纲要给科学教育与编程教育定了"国家战略"的位置，不是一阵风。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">113. 纲要的「两步走」目标，对编程教育意味着什么？</div>
+            <div class="answer">
+                <strong>两步走</strong><br>
+                - <strong>到 2027 年</strong>：教育强国建设取得重要阶段性成效，拔尖创新人才不断涌现。<br>
+                - <strong>到 2035 年</strong>：建成教育强国，基础教育普及水平和质量稳居世界前列。<br>
+                - <strong>对编程教育的意义</strong>：孩子这一代正好赶上窗口期，编程等科技素养会被持续重视。<br>
+                <strong>总结</strong>：方向是长期的，家长可以按"打基础、看兴趣"的节奏来规划。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">114. 什么是「沃土计划」和「脱颖计划」？和编程有什么关系？</div>
+            <div class="answer">
+                <strong>出自纲要（第(十四)条）</strong><br>
+                - <strong>沃土计划</strong>：面向中小学生实施科学素养培育，像沃土一样打好科学与创新的土壤。<br>
+                - <strong>脱颖计划</strong>：面向有创新潜质的高中生，支持其脱颖而出。<br>
+                - <strong>和编程的关系</strong>：编程是科学素养与创新实践的重要载体，这两个计划是编程、科学教育被看重的顶层设计。<br>
+                <strong>总结</strong>：国家在做"拔尖创新人才早发现、早培养"，编程是可以发力的方向之一。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">115. 2023 年的科学教育文件，对编程教育有什么影响？</div>
+            <div class="answer">
+                <strong>文件</strong>：2023 年 5 月，教育部等十八部门印发《关于加强新时代中小学科学教育工作的意见》，是新时代科学教育体系化推进的起点。<br>
+                - <strong>配套</strong>：出台《中小学科学教育工作指南》。<br>
+                - <strong>落地</strong>：已设立 241 个全国中小学科学教育实验区、1862 所实验校。<br>
+                - <strong>对编程的意义</strong>：科学教育与编程、机器人、创客天然相连，校内编程类课程和活动明显增多。<br>
+                <strong>总结</strong>：科学教育从「加一门课」转向「成体系地做」，编程是其中的活跃板块。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">116. 2025 年《关于加强中小学科技教育的意见》有哪些要点？编程属于其中吗？</div>
+            <div class="answer">
+                <strong>文件</strong>：2025 年 11 月，教育部等七部门印发（教基〔2025〕7 号）。<br>
+                - <strong>目标</strong>：到 2030 年，中小学科技教育体系基本建立；到 2035 年，科技教育生态系统全面构建，项目式、探究式、跨学科教学普遍应用。<br>
+                - <strong>六方面任务</strong>：协同贯通育人体系、开放融合课程生态、素养导向教研评价、多样资源开发环境、师资建设与家校社协同、国际交流合作。<br>
+                - <strong>编程属于其中吗</strong>：属于。编程是科技教育中工程实践与项目式学习的核心抓手。<br>
+                <strong>总结</strong>：从「科学教育」升级到「科技教育」，编程教育的地位也随之提升。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">117. 「科学教育」「科技教育」和少儿编程是一回事吗？</div>
+            <div class="answer">
+                <strong>一脉相承，各有侧重</strong><br>
+                - <strong>科学教育</strong>：重在科学精神、科学知识与探究意识。<br>
+                - <strong>科技教育</strong>：更强调跨界融合、工程实践与生态构建，提出「引导学生像科学家一样思考、像工程师一样实践」。<br>
+                - <strong>少儿编程</strong>：是承载上述目标的一个具体、可动手的载体。<br>
+                <strong>总结</strong>：编程不是孤立的技能训练，而是科学素养与工程实践落地的抓手。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">118. 什么是「人工智能+教育」行动计划？对学编程的孩子意味着什么？</div>
+            <div class="answer">
+                <strong>文件</strong>：2026 年，教育部等五部门印发《「人工智能+教育」行动计划》（教科信〔2026〕1 号）。<br>
+                - <strong>目标</strong>：到 2030 年，人工智能与教育深度融合格局基本形成。<br>
+                - <strong>要求</strong>：加快普及中小学生人工智能教育，完善《中小学人工智能通识教育指南》，把 AI 教育纳入地方课程体系、融入课后服务与研学实践；并将人工智能纳入教师资格考试和认证内容。<br>
+                - <strong>对学编程孩子的意义</strong>：未来的课堂会更"AI 友好"，编程与 AI 会更深地结合。<br>
+                <strong>总结</strong>：AI 教育从「通知倡导」进入「行动计划」的落地阶段。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">119. 「双减」之后，为什么编程课反而变多了？</div>
+            <div class="answer">
+                <strong>一减一增</strong><br>
+                - <strong>减</strong>：严控学科类培训、规范非学科类培训、治理过重作业负担。<br>
+                - <strong>增</strong>：提高课堂教学与课后服务质量，加强科学教育与核心素养培育。<br>
+                - <strong>编程的位置</strong>：编程属于科学教育/科技教育方向，是"规范的非学科类"里被鼓励的部分，因此在校内课后服务和合规机构里更受重视。<br>
+                <strong>总结</strong>：减的是机械重复的负担，增的是科学素养与动手实践。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">120. 国家智慧教育平台上有编程学习资源吗？</div>
+            <div class="answer">
+                <strong>免费、权威的线上资源库</strong><br>
+                - <strong>规模</strong>：国家智慧教育公共服务平台汇集 14 万余条中小学资源、1.25 万余门职教课程、14.5 万门高教课程，用户超 1.78 亿、覆盖 200 多个国家。<br>
+                - <strong>用途</strong>：家长可用来给孩子找信息科技、科学、人工智能相关的优质课程与科普内容，免费且质量有保障。<br>
+                <strong>总结</strong>：先用好国家给的免费编程/科学资源，再考虑是否报班。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">121. 「阳光招生」和编程竞赛、证书有什么关系？</div>
+            <div class="answer">
+                <strong>核心：公平、公开、免试就近</strong><br>
+                - <strong>义务教育</strong>：免试就近入学，公办民办同步招生，严禁以竞赛成绩、考试证书等作为招生依据或加分项。<br>
+                - <strong>和编程的关系</strong>：拿编程竞赛证书去"择校"是行不通的；真正有价值的仍是孩子学到的东西。<br>
+                - <strong>红线</strong>：不得违规跨区域"掐尖"、不得收取与入学挂钩的费用。<br>
+                <strong>总结</strong>：招生以当地教育部门当年政策为准，别信任何"走后门"的话术。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">122. 编程教育的政策会一直持续吗？会不会过几年就凉了？</div>
+            <div class="answer">
+                <strong>从政策脉络看，是长期方向</strong><br>
+                - <strong>时间线</strong>：2022 信息科技新课标 → 2023 科学教育意见 → 2024 AI 教育通知 → 2025 科技教育意见 + 教育强国纲要 → 2026「人工智能+教育」行动计划，连续不断。<br>
+                - <strong>逻辑</strong>：编程、人工智能被视为服务科技强国与人才培养的基础内容，不是短期热点。<br>
+                <strong>总结</strong>：与其追"风口"，不如让孩子按兴趣和节奏，把思维和能力真正学扎实。
+            </div>
+        </div>
+
+        <!-- ========== 新增：教育方针与编程教育 (123-129) ========== -->
+        <div class="qa-item">
+            <div class="question">123. 国家要培养什么样的人？编程教育能帮上什么忙？</div>
+            <div class="answer">
+                <strong>立德树人是根本任务</strong><br>
+                - <strong>目标</strong>：培养德智体美劳全面发展的社会主义建设者和接班人。<br>
+                - <strong>能力导向</strong>：政策反复强调批判性思维、自主学习、团队合作、创新实践等能力。<br>
+                - <strong>编程的贡献</strong>：编程天然训练这些能力——调试需要耐心，做项目需要合作，创造需要动手实践。<br>
+                <strong>总结</strong>：编程不只为学技术，更是培养"会思考、能创造、有担当"的人的一条路径。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">124. 什么是「五育并举」？编程算哪一育？</div>
+            <div class="answer">
+                <strong>德、智、体、美、劳全面发展</strong><br>
+                - <strong>不唯分数</strong>：把体育、美育、劳动教育与智育放在同等重要的位置。<br>
+                - <strong>编程算哪一育</strong>：主要落在"智育"，同时也能服务劳动教育（动手实践）、美育（做出作品）。<br>
+                - <strong>具体体现</strong>：保障中小学生每天综合体育活动时间（不低于 2 小时）、控制近视率与肥胖率。<br>
+                <strong>总结</strong>：编程是"智育"的一部分，但孩子成长需要的是全面的营养。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">125. 什么是「核心素养」？编程教育培养的是哪些素养？</div>
+            <div class="answer">
+                <strong>是什么</strong>：指学生应具备的、能够适应终身发展和社会发展需要的必备品格与关键能力。<br>
+                - <strong>新课标的转向</strong>：从「知识本位」转向「素养本位」——不再只问"记住了吗"，而是问"理解了吗、会用了么"。<br>
+                - <strong>信息科技的核心素养</strong>：信息意识、计算思维、数字化学习与创新、信息社会责任。<br>
+                <strong>总结</strong>：编程教育从"学语法"转向"练思维、担责任"，正是素养导向的体现。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">126. 为什么国家强调「拔尖创新人才」？和编程特长有什么关系？</div>
+            <div class="answer">
+                <strong>面向科技自立自强</strong><br>
+                - <strong>需求</strong>：国家战略需要基础学科、新兴学科、交叉学科的顶尖人才，因此强调「早发现、早培养」。对应纲要的「沃土计划」「脱颖计划」。<br>
+                - <strong>和编程的关系</strong>：编程与算法是计算科学、人工智能等前沿领域的基本功，是有潜质的孩子可以深耕的方向。<br>
+                <strong>提醒</strong>：政策鼓励的是"真兴趣、真能力"，不是"刷奖项"。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">127. 「基础教育是教育强国的基点」，编程在其中扮演什么角色？</div>
+            <div class="answer">
+                <strong>地基论</strong><br>
+                - <strong>含义</strong>：建设教育强国，基点在基础教育，着力培养批判性思维、自主学习能力、团队合作能力。<br>
+                - <strong>编程的角色</strong>：编程是基础教育阶段最容易"动手做、出成果"的实践型内容之一，能把这些能力落到实处。<br>
+                <strong>总结</strong>：孩子小学到高中这一段，打的是受用一生的底子，编程是可以借力的抓手。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">128. 为什么要「减负提质」？学编程会不会反而增加负担？</div>
+            <div class="answer">
+                <strong>减的是负担，提的是质量</strong><br>
+                - <strong>减</strong>：机械重复的训练、超纲超前的抢跑。<br>
+                - <strong>编程的位置</strong>：编程属于"动手实践、项目式学习"，只要不加码、不刷题，它更像"提质"而非"增负"。<br>
+                - <strong>红线</strong>：不以牺牲睡眠、运动和主线学业为代价。<br>
+                <strong>总结</strong>：把编程当一项健康的兴趣来经营，它和"减负"并不冲突。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">129. 什么是「教育数字化战略」？和少儿编程有什么关系？</div>
+            <div class="answer">
+                <strong>用技术促进教育公平与质量</strong><br>
+                - <strong>要做的事</strong>：实施国家教育数字化战略行动，推动人工智能助力教育变革，扩大优质教育资源受益面。<br>
+                - <strong>和编程的关系</strong>：数字化、智能化的时代底色，让"懂技术、会编程"成为数字公民的基础素养之一。<br>
+                <strong>总结</strong>：让每个孩子都能接触优质的科学与编程教育，是这项战略的初心。
+            </div>
+        </div>
+
+        <!-- ========== 新增：科技趋势与编程 (130-135) ========== -->
+        <div class="qa-item">
+            <div class="question">130. 什么是「人工智能+」行动？和学编程有什么关系？</div>
+            <div class="answer">
+                <strong>文件</strong>：2025 年 8 月，国务院印发《关于深入实施「人工智能+」行动的意见》（国发〔2025〕11 号）。<br>
+                - <strong>三阶段目标</strong>：到 2027 年，"人工智能+"与 6 大重点领域广泛深度融合，新一代智能终端、智能体等应用普及率超 70%；到 2030 年超 90%，智能经济成为重要增长极；到 2035 年，全面步入智能经济和智能社会发展新阶段。<br>
+                - <strong>和编程的关系</strong>：AI 全面落地的时代，懂算法、会编程的人更懂如何指挥和改造 AI。<br>
+                <strong>总结</strong>：人工智能被定位为发展新质生产力的重要引擎，编程是参与其中的"入场券"之一。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">131. 什么是「新质生产力」？为什么编程教育被反复提及？</div>
+            <div class="answer">
+                <strong>是什么</strong>：以科技创新为核心驱动力的先进生产力，人工智能被视为其重要引擎。<br>
+                - <strong>为什么提编程</strong>：新质生产力依赖创新与数字技术，编程是培养计算思维与创新实践的基础教育手段。<br>
+                - <strong>和孩子的联系</strong>：未来的产业形态更依赖创新，所以科学精神、编程思维、数字素养要从小培养。<br>
+                <strong>总结</strong>：时代要的是"用新技术解决新问题"的能力。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">132. AI 时代，编程教育为什么反而更重要了？</div>
+            <div class="answer">
+                <strong>三句话</strong><br>
+                - <strong>AI 越强，"指挥 AI 的人"越值钱</strong>：而指挥的前提是懂逻辑、懂算法。<br>
+                - <strong>编程是"思维的健身房"</strong>：拆解、抽象、调试，这些能力 AI 替代不了。<br>
+                - <strong>编程是通往 AI 的桥</strong>：不学编程，很多 AI 的原理与用法只能停留在"会用软件"的层面。<br>
+                <strong>总结</strong>：AI 时代，编程教育从"可选"变成了"基础"。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">133. 未来哪些职业会被 AI 改变？编程能力能帮孩子什么？</div>
+            <div class="answer">
+                <strong>规律</strong><br>
+                - <strong>更易被自动化</strong>：重复性高、规则明确的工作。<br>
+                - <strong>相对稳固</strong>：需要创意、沟通、复杂判断与跨学科整合的工作。<br>
+                - <strong>编程能力的帮助</strong>：让孩子理解机器的"思维方式"，更容易与 AI 协作、甚至创造新工具。<br>
+                <strong>总结</strong>：与其预测哪个职业会消失，不如练好"迁移能力"，编程正是很好的训练。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">134. 什么是「智能经济」？学编程的孩子该做什么准备？</div>
+            <div class="answer">
+                <strong>概念</strong>：「人工智能+」行动提出，到 2030 年智能经济成为重要增长极，到 2035 年全面步入智能经济和智能社会。<br>
+                - <strong>核心</strong>：以人工智能驱动产业升级，重塑生产方式与人机协作形态。<br>
+                - <strong>孩子的准备</strong>：打牢编程与算法基础、保持好奇心、学会与 AI 分工协作。<br>
+                <strong>总结</strong>：智能经济不是遥远的概念，而正在改变孩子未来要进入的职场。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">135. 编程会被 AI 取代吗？</div>
+            <div class="answer">
+                <strong>会变，但不会消失</strong><br>
+                - <strong>不吃香的</strong>：只会照抄、拼凑现成代码。<br>
+                - <strong>更稀缺的</strong>：定义问题、拆解需求、判断对错、整合方案的能力。<br>
+                - <strong>趋势</strong>：AI 会承担越来越多的"写代码"环节，人则更多负责"想清楚要解决什么问题"。<br>
+                <strong>总结</strong>：学编程的重点从来不是敲代码本身，而是背后的思维与工程能力——这恰恰是 AI 时代最值钱的部分。
+            </div>
+        </div>
+
+        <!-- ========== 新增：家长新问题（编程视角） (136-153) ========== -->
+        <div class="qa-item">
+            <div class="question">136. 孩子学编程，家长需要陪着一起学吗？</div>
+            <div class="answer">
+                <strong>不一定要一起写代码，但要一起关心</strong><br>
+                - <strong>低龄阶段</strong>：可以陪孩子完成小任务，感受成就感。<br>
+                - <strong>高年级</strong>：不必盯着每行代码，多聊"今天做了什么、遇到什么难题"。<br>
+                - <strong>关键是态度</strong>：家长的关注本身，就是孩子坚持的动力。<br>
+                <strong>总结</strong>：陪的是兴趣和习惯，不是技术细节。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">137. 孩子对编程三分钟热度怎么办？</div>
+            <div class="answer">
+                <strong>先分清是"新鲜感过了"还是"真的没兴趣"</strong><br>
+                - <strong>降难度</strong>：把任务拆小，让孩子多体验"我做出来了"的成就感。<br>
+                - <strong>换形式</strong>：从做游戏、做动画切入，比纯抄代码更吸引人。<br>
+                - <strong>给时间</strong>：兴趣有起伏很正常，允许孩子慢一点、停一停再看。<br>
+                <strong>提醒</strong>：不要用催促和比较把孩子推得更远。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">138. 学编程会不会耽误正常功课？</div>
+            <div class="answer">
+                <strong>安排得当，反而是助力</strong><br>
+                - <strong>时间管理</strong>：把编程放在完成功课后，每次不超过 1 小时左右。<br>
+                - <strong>能力迁移</strong>：编程练的逻辑、专注、耐心，对数学等学科有正向帮助。<br>
+                - <strong>红线</strong>：不以牺牲睡眠、运动和主线学业为代价。<br>
+                <strong>总结</strong>：当成一项健康的兴趣来经营，而不是"抢时间"的负担。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">139. 孩子在学校编程学得慢、跟不上，还要不要校外补？</div>
+            <div class="answer">
+                <strong>先找原因，再决定</strong><br>
+                - <strong>基础问题</strong>：如果概念没吃透，校外补课可能只是重复，先补基础更重要。<br>
+                - <strong>兴趣问题</strong>：如果是没兴趣，加课只会加重抵触。<br>
+                - <strong>对症下药</strong>：先和老师沟通，明确是"跟不上"还是"没投入"。<br>
+                <strong>总结</strong>：补课不是万能药，先诊断再开方。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">140. 怎么给孩子选合适的编程课或机构？</div>
+            <div class="answer">
+                <strong>五个看点</strong><br>
+                - <strong>课程体系</strong>：是否循序渐进、有明确的学习路径（图形化→Python→C++ 等）。<br>
+                - <strong>师资</strong>：老师是否懂编程、懂教学、懂孩子。<br>
+                - <strong>课堂形式</strong>：是否动手实践多、讲授少。<br>
+                - <strong>结果导向</strong>：是重能力成长，还是只会承诺"包获奖"。<br>
+                - <strong>合规性</strong>：涉及竞赛的，先核对是否在白名单内。<br>
+                <strong>提醒</strong>：多试听、多比较，别被"保过""保奖"话术带偏。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">141. 学编程是选图形化（Scratch）、Python 还是 C++？</div>
+            <div class="answer">
+                <strong>按年龄和基础来选</strong><br>
+                - <strong>小学低年级</strong>：多用图形化（Scratch），拖拽即可编程，降低门槛、保护兴趣。<br>
+                - <strong>小学高年级及以后</strong>：可逐步过渡到 Python 等文本语言。<br>
+                - <strong>C++</strong>：通常是为信息学竞赛等更深入的方向做准备，不必操之过急。<br>
+                <strong>总结</strong>：图形化不是"玩具"，它是通往真实编程的阶梯。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">142. 孩子学编程，家长能做的具体小事有哪些？</div>
+            <div class="answer">
+                <strong>简单但有用</strong><br>
+                - <strong>当观众</strong>：让孩子演示程序作品，认真看、给反馈。<br>
+                - <strong>提问题</strong>：多问"这个是怎么实现的？"，鼓励孩子讲原理。<br>
+                - <strong>给空间</strong>：允许孩子"玩"自己的项目，哪怕很幼稚。<br>
+                - <strong>做记录</strong>：帮孩子留存作品，见证一点一点进步。<br>
+                <strong>总结</strong>：家长的支持，是孩子最好的学习环境。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">143. 孩子说想放弃学编程，家长该怎么办？</div>
+            <div class="answer">
+                <strong>先倾听，再决定</strong><br>
+                - <strong>问清楚原因</strong>：太难了？没兴趣？还是和同学、老师有关？<br>
+                - <strong>区分对待</strong>：是暂时的困难，还是真的不适合，处理方法完全不同。<br>
+                - <strong>给缓冲</strong>：可以先降低强度或换个形式（比如从 C++ 回到图形化做项目），而不是立刻"一刀切"停掉。<br>
+                - <strong>尊重孩子</strong>：如果确实没兴趣，及时止损也是一种负责。<br>
+                <strong>总结</strong>：放弃不等于失败，关键是让孩子学会为自己的选择负责。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">144. 孩子学编程，选线上课还是线下课？</div>
+            <div class="answer">
+                <strong>各有优势</strong><br>
+                - <strong>线上</strong>：时间灵活、优质资源多。<br>
+                - <strong>线下</strong>：互动强、同伴氛围好、老师能盯得住调试过程。<br>
+                - <strong>折中</strong>：可参考"线上线下融合（OMO）+ 双师协同"的模式。<br>
+                <strong>建议</strong>：低龄、自律弱、容易被卡住的孩子，优先选有人陪着、能及时答疑的形式。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">145. 要不要给孩子买编程机器人、编程玩具？</div>
+            <div class="answer">
+                <strong>不是必需</strong><br>
+                - <strong>启蒙足够</strong>：基础款几百元就能满足低龄启蒙；用电脑做图形化编程同样能打好基础。<br>
+                - <strong>顺序</strong>：先看孩子有没有兴趣，再决定买不买、买什么。<br>
+                - <strong>提醒</strong>：贵套装不等于好效果，别让"装备"代替了"动手"。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">146. 女孩适合学编程吗？</div>
+            <div class="answer">
+                <strong>适合，且无性别差异</strong><br>
+                - <strong>看什么</strong>：编程看的是逻辑与兴趣，与性别无关。<br>
+                - <strong>现实</strong>：不少优秀的女工程师与科学家在技术领域大放异彩。<br>
+                - <strong>家长的态度很关键</strong>：避免"女孩学不好技术"的暗示，鼓励比标签重要。<br>
+                <strong>总结</strong>：兴趣面前，人人平等。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">147. 孩子学编程多久能见效？要不要参加编程考级？</div>
+            <div class="answer">
+                <strong>别急于求成</strong><br>
+                - <strong>"见效"</strong>：编程的价值更多体现在思维方式上，不易短期量化。<br>
+                - <strong>考级</strong>：可以参加（如 CCF 的能力等级认证等），作为阶段性检验，但前提是不消磨兴趣、不变成新的应试压力。<br>
+                <strong>总结</strong>：把编程考级当"体检"，别当"目标"。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">148. 孩子能自学编程吗，还是必须报班？</div>
+            <div class="answer">
+                <strong>看年龄、看自驱、看陪伴</strong><br>
+                - <strong>低龄、自律弱</strong>：有老师引导和同伴氛围，更容易坚持。<br>
+                - <strong>高年级、兴趣浓</strong>：借助优质线上资源（含国家智慧教育平台）自学也完全可行。<br>
+                <strong>建议</strong>：可用 2~3 个月做"低成本试错期"，观察孩子的兴趣信号再决定投入。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">149. 学编程对数学成绩有帮助吗？</div>
+            <div class="answer">
+                <strong>有正向迁移，但别神化</strong><br>
+                - <strong>相通之处</strong>：编程练的逻辑、分解、抽象与数学相通，可能助益数学（尤其算法、推理类）。<br>
+                - <strong>提醒</strong>：这种帮助是因能力迁移而来，不该把它当作"提分神器"来要求孩子。<br>
+                <strong>总结</strong>：把编程当能力训练，数学的收益往往是水到渠成。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">150. 孩子坐不住、专注力差，能学编程吗？</div>
+            <div class="answer">
+                <strong>恰恰适合，但方式要对</strong><br>
+                - <strong>选形式</strong>：用图形化、做小游戏小动画切入，任务短、反馈快，容易抓住好动的孩子。<br>
+                - <strong>看变化</strong>：在"我做出成果了"的成就感里，专注和耐心会慢慢长出来。<br>
+                <strong>总结</strong>：与其要求孩子先坐住，不如用有趣的编程任务把他吸引住。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">151. 怎么判断孩子有没有编程天赋？</div>
+            <div class="answer">
+                <strong>别急着用"天赋"下结论</strong><br>
+                - <strong>更有意义的信号</strong>：孩子是否好奇、愿意钻研难题、喜欢动手创造、程序报错了还愿意再试。<br>
+                - <strong>更重要的因素</strong>：兴趣加坚持，远比早期"天赋"更能决定走多远。<br>
+                <strong>总结</strong>：多给机会尝试，答案会自己浮现。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">152. 编程课一般怎么收费，多少钱合理？</div>
+            <div class="answer">
+                <strong>价格差异大，避开两个坑</strong><br>
+                - <strong>预付坑</strong>：不要一次性大额预付，单次缴费建议不超过 3 个月。<br>
+                - <strong>话术坑</strong>：警惕"包获奖""保升学""绿色通道"等夸大承诺。<br>
+                - <strong>合规</strong>：凡向家长收费、或不在教育部白名单内的竞赛，都属于违规，别参加。<br>
+                <strong>总结</strong>：多试听、多比较，把钱花在真实的课程质量上。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <div class="question">153. 孩子同时报了好几个兴趣班，编程要保留吗？</div>
+            <div class="answer">
+                <strong>问孩子三个问题</strong><br>
+                - 哪件事让他忘了时间？<br>
+                - 哪件事他会主动琢磨、自己找答案？<br>
+                - 哪件事的收获能用到别的地方？<br>
+                <strong>建议</strong>：优先保留真正点亮孩子的那个——如果编程能做到前两条，它往往值得留下。<br>
+                <strong>总结</strong>：兴趣贵在深度，而非数量。
+            </div>
+        </div>
+
     </div> <!-- qa-container 结束 -->
 
     <div class="footer-text">
@@ -1452,93 +2124,113 @@
         }
     </style>
 
-    <script>
-        document.querySelectorAll('.question').forEach(question => {
-            question.addEventListener('click', function(e) {
+    
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // ===== 分类归类表（覆盖全部 87 题） =====
+    var CATEGORY = {
+        basic:   [1,2,3,5,6,8,11,15,16,31,32,40,43,46,49,50,54,62,67,72],           // 基础认知
+        age:     [4,14,17,19,22,37,44,48,52,53,55,58,59,63,73],                     // 年龄规划
+        learn:   [9,10,12,13,18,21,23,24,28,30,33,39,47,51,57,60,65,66,74,76,77],   // 学习方法
+        ability: [20,25,26,27,34,35,36,38,42,56,61,64,69,71,75],                    // 能力培养
+        future:  [7,29,41,45,68,70],                                               // 未来发展
+        ai:      [78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97],    // AI教育
+        compete: [98,99,100,101,102,103,104,105],                                   // 竞赛升学
+        policy:  [106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122], // 国家政策
+        edu:     [123,124,125,126,127,128,129],                                     // 教育方针
+        tech:    [130,131,132,133,134,135],                                         // 科技趋势
+        parent:  [136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153] // 家长新问
+    };
+
+    var qaItems = Array.prototype.slice.call(document.querySelectorAll('.qa-item'));
+    var navItems = Array.prototype.slice.call(document.querySelectorAll('.nav-item'));
+    var searchInput = document.getElementById('searchInput');
+    var noResults = document.querySelector('.no-results');
+    var currentCat = 'all';
+
+    qaItems.forEach(function (item, i) { item.dataset.num = String(i + 1); });
+
+    function closeAll() {
+        document.querySelectorAll('.question').forEach(function (q) {
+            q.classList.remove('active');
+            if (q.nextElementSibling) q.nextElementSibling.classList.remove('active');
+        });
+    }
+
+    function applyFilter() {
+        var term = (searchInput && searchInput.value ? searchInput.value : '').trim().toLowerCase();
+        var shown = 0;
+        qaItems.forEach(function (item) {
+            var num = parseInt(item.dataset.num, 10);
+            var inCat = (currentCat === 'all') || ((CATEGORY[currentCat] || []).indexOf(num) !== -1);
+            var text = item.textContent.toLowerCase();
+            var inSearch = !term || text.indexOf(term) !== -1;
+            var show = inCat && inSearch;
+            item.style.display = show ? 'block' : 'none';
+            if (show) shown++;
+        });
+        if (noResults) noResults.style.display = shown ? 'none' : 'block';
+    }
+
+    // 折叠展开（一次只展开一条）
+    document.querySelectorAll('.question').forEach(function (q) {
+        q.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var wasActive = this.classList.contains('active');
+            closeAll();
+            if (!wasActive) {
+                this.classList.add('active');
+                if (this.nextElementSibling) this.nextElementSibling.classList.add('active');
+            }
+        });
+    });
+
+    // 点击空白处收起
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.question')) closeAll();
+    });
+
+    // ===== 荣誉墙：靠边隐藏；鼠标移入自动滑出，点击可固定/取消固定 =====
+    (function () {
+        var walls = Array.prototype.slice.call(document.querySelectorAll('.honor-wall'));
+        walls.forEach(function (w) {
+            var downX = 0, downY = 0, downT = 0;
+            w.addEventListener('mousedown', function (e) {
+                downX = e.clientX; downY = e.clientY; downT = Date.now();
+            });
+            w.addEventListener('click', function (e) {
                 e.stopPropagation();
-                
-                // 如果当前问答项已激活，则关闭它
-                if (this.classList.contains('active')) {
-                    this.classList.remove('active');
-                    const answer = this.nextElementSibling;
-                    answer.classList.remove('active');
-                } else {
-                    // 关闭所有其他问答项
-                    document.querySelectorAll('.question').forEach(q => {
-                        if (q !== this) {
-                            q.classList.remove('active');
-                            q.nextElementSibling.classList.remove('active');
-                        }
-                    });
-                    
-                    // 激活当前问答项
-                    this.classList.add('active');
-                    const answer = this.nextElementSibling;
-                    answer.classList.add('active');
-                }
-                        q.nextElementSibling.classList.remove('active');
-                    });
-                    
-                    // 打开当前问题和答案
-                    question.classList.add('active');
-                    answer.classList.add('active');
-                }
+                // 忽略“拖动滚动条”产生的点击
+                var dist = Math.abs(e.clientX - downX) + Math.abs(e.clientY - downY);
+                if (dist > 8 && Date.now() - downT < 800) return;
+                w.classList.toggle('open');
             });
         });
-
-        // 添加搜索功能
-        const searchInput = document.getElementById('searchInput');
-        const qaItems = document.querySelectorAll('.qa-item');
-        const noResults = document.querySelector('.no-results');
-
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            let hasResults = false;
-
-            qaItems.forEach(item => {
-                const question = item.querySelector('.question').textContent.toLowerCase();
-                const answer = item.querySelector('.answer').textContent.toLowerCase();
-
-                if (question.includes(searchTerm) || answer.includes(searchTerm)) {
-                    hasResults = true;
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-
-            noResults.style.display = hasResults ? 'none' : 'block';
+        // 点击面板以外的区域，收起已固定的面板
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.honor-wall')) {
+                walls.forEach(function (w) { w.classList.remove('open'); });
+            }
         });
+    })();
 
-        const questions = {
-            basic: [1, 2, 3, 5, 8, 11, 13, 15, 16], // 基础认知类问题编号
-            age: [4, 7, 10, 14, 17, 18, 24, 37, 52], // 年龄规划类问题编号
-            learn: [9, 12, 19, 22, 23, 28, 33, 44, 47, 57], // 学习方法类问题编号
-            ability: [6, 20, 25, 26, 27, 31, 36, 38, 42], // 能力培养类问题编号
-            future: [29, 30, 34, 35, 40, 41, 68, 70], // 未来发展类问题编号
-        };
-
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const category = item.dataset.category;
-                
-                // 切换导航项的激活状态
-                document.querySelectorAll('.nav-item').forEach(nav => {
-                    nav.classList.remove('active');
-                });
-                item.classList.add('active');
-
-                // 显示/隐藏对应分类的问题
-                qaItems.forEach((qaItem, index) => {
-                    if (category === 'all') {
-                        qaItem.style.display = 'block';
-                    } else {
-                        const questionNumber = index + 1;
-                        qaItem.style.display = questions[category].includes(questionNumber) ? 'block' : 'none';
-                    }
-                });
-            });
+    // 分类切换
+    navItems.forEach(function (item) {
+        item.addEventListener('click', function () {
+            navItems.forEach(function (n) { n.classList.remove('active'); });
+            item.classList.add('active');
+            currentCat = item.dataset.category || 'all';
+            applyFilter();
         });
-    </script>
+    });
+
+    // 搜索（与分类叠加生效）
+    if (searchInput) searchInput.addEventListener('input', applyFilter);
+
+    // 初始显示全部
+    applyFilter();
+});
+
+</script>
 </body>
 </html>
